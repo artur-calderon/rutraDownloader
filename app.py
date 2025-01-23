@@ -12,7 +12,7 @@ SERVER_URL = "http://localhost:5000"
 # Certifica-se de que a pasta de downloads existe
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-# Inicialização do Flask
+# Inicialização do Flaskss
 app = Flask(__name__)
 
 # Funções para download
