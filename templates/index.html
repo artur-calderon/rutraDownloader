@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Youtube Downloader</title>
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.7/antd.min.css"
+			rel="stylesheet" />
+
+		<link
+			href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.7/antd.min.css"
+			rel="stylesheet" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.24.7/antd.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	</head>
+	<body style="padding: 20px">
+		<h1 style="text-align: center">Youtube Downloader</h1>
+		<div style="max-width: 600px; margin: 0 auto">
+			<form id="downloadForm">
+				<label for="url" style="display: block; margin-bottom: 8px"
+					>URL do Vídeo/Playlist:</label
+				>
+				<input
+					id="url"
+					name="url"
+					placeholder="Cole o link aqui"
+					class="ant-input"
+					style="margin-bottom: 16px"
+					required />
+
+				<label for="type" style="display: block; margin-bottom: 8px"
+					>Tipo de Download:</label
+				>
+				<select
+					id="type"
+					name="type"
+					class="ant-select"
+					style="width: 100%; margin-bottom: 16px">
+					<option value="video">Vídeo</option>
+					<option value="playlist">Playlist</option>
+				</select>
+
+				<button
+					type="submit"
+					class="ant-btn ant-btn-primary"
+					style="width: 100%">
+					Baixar
+				</button>
+			</form>
+
+			<div id="previewContainer" style="margin-top: 40px; display: none">
+				<h3>Pré-visualização:</h3>
+				<div id="preview" style="margin-top: 20px"></div>
+			</div>
+
+			<div id="progressContainer" style="margin-top: 40px; display: none">
+				<h3>Progresso:</h3>
+				<div id="progressBars"></div>
+			</div>
+		</div>
+
+		<script>
+			const form = document.getElementById("downloadForm");
+			const previewContainer =
+				document.getElementById("previewContainer");
+			const preview = document.getElementById("preview");
+			const progressContainer =
+				document.getElementById("progressContainer");
+			const progressBars = document.getElementById("progressBars");
+
+			const loadingSpinner = document.createElement("div");
+
+			loadingSpinner.innerHTML = `
+				<div style="text-align: center; margin: 20px 0;">
+					<div class="ant-spin ant-spin-spinning">
+						<span class="ant-spin-dot ant-spin-dot-spin">
+							<i class="ant-spin-dot-item"></i>
+							<i class="ant-spin-dot-item"></i>
+							<i class="ant-spin-dot-item"></i>
+							<i class="ant-spin-dot-item"></i>
+						</span>
+					</div>
+					<p>Buscando informações do link, por favor aguarde. (Se for uma playlist com muitos vídeos, pode demorar um pouco)</p>
+				</div>
+			`;
+
+			loadingSpinner.style.display = "none";
+			document.body.appendChild(loadingSpinner);
+
+			form.addEventListener("submit", async (event) => {
+				event.preventDefault();
+				const url = document.getElementById("url").value;
+				const type = document.getElementById("type").value;
+
+				// Show loading spinner
+				loadingSpinner.style.display = "block";
+				previewContainer.style.display = "none";
+
+				// Fetch preview information
+				try {
+					const response = await axios.post("/preview", {
+						url,
+						type,
+					});
+					const { title, thumbnail, duration, items } = response.data;
+
+					// Show preview
+					loadingSpinner.style.display = "none";
+					previewContainer.style.display = "block";
+					progressContainer.style.display = "none";
+
+					preview.innerHTML = `
+                    <img src="${thumbnail}" alt="${title}" style="width: 100%; max-height: 300px; object-fit: cover;">
+                    <h4>${title}</h4>
+                    <p>Duração: ${duration} segundos</p>
+                `;
+
+					if (type === "playlist" && items) {
+						preview.innerHTML += `
+                        <ul>
+                            ${items
+								.map(
+									(item, index) =>
+										`<li>${index + 1}. ${item.title} (${
+											item.duration
+										} segundos)</li>`
+								)
+								.join("")}
+                        </ul>
+                    `;
+					}
+
+					preview.innerHTML += `
+                    <button class="ant-btn ant-btn-primary" style="margin-right: 8px;" onclick="startDownload('${type}', '${url}')">Baixar ${type}</button>
+                    <button class="ant-btn ant-btn-default" onclick="startDownload('audio', '${url}')">Baixar Áudio ${type}</button>
+                `;
+				} catch (error) {
+					loadingSpinner.style.display = "none";
+					alert("Erro ao buscar informações do vídeo/playlist.");
+					console.error(error);
+				}
+			});
+
+			function startDownload(type, url) {
+				progressContainer.style.display = "block";
+				progressBars.innerHTML = `<p>Iniciando download de ${type}...</p>`;
+
+				axios
+					.post(`/download-${type}`, { url })
+					.then((response) => {
+						const fileLink = response.data.file_link;
+						progressBars.innerHTML = `<p style="padding:1rem;">Download de ${type} concluído!  <a href="${fileLink}" class="ant-btn ant-btn-primary" download target='_blank'>Clique aqui para baixar</a></p>`;
+					})
+					.catch((error) => {
+						alert("Erro durante o download.");
+						console.error(error);
+					});
+			}
+		</script>
+	</body>
+</html>
