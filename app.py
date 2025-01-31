@@ -25,7 +25,7 @@ def download_video(url, progress_hook=None):
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
         'format': 'best',
         'progress_hooks': [progress_hook] if progress_hook else [],
-        'cookies':'cookies.txt',
+    
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
@@ -45,7 +45,7 @@ def download_audio(url, progress_hook=None):
             'preferredquality': '192',
         }],
         'force_generic_extractor': True,
-        'cookies':'cookies.txt',
+    
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
@@ -82,7 +82,7 @@ def download_playlist(url, progress_hook=None):
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s'),
         'format': 'best',
         'progress_hooks': [progress_hook] if progress_hook else [],
-        'cookies':'cookies.txt',
+    
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
@@ -233,4 +233,5 @@ def serve_file(filename):
 
 # Inicia o servidor
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=80) #replit
+    # app.run(debug=True)
