@@ -1,13 +1,17 @@
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, send_file, render_template, after_this_request
 import os
 import urllib.parse
 import zipfile
 from yt_dlp import YoutubeDL
+import time
+import shutil
 
 # Configurações
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOWNLOAD_FOLDER = os.path.join(BASE_DIR, 'Rutra Downloader')
 SERVER_URL = "http://localhost:5000"
+
+print(f"Download folder: {DOWNLOAD_FOLDER}")
 
 # Certifica-se de que a pasta de downloads existe
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
@@ -39,12 +43,12 @@ def download_audio(url, progress_hook=None):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'force_generic_extractor': True,
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
     with YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
-        
         file_paths = []
 
         if "entries" in info_dict:
@@ -98,6 +102,7 @@ def download_playlist(url, progress_hook=None):
                 zipf.write(file, os.path.basename(file))
                 
         return info_dict, zip_filename
+
 
 # Rotas
 @app.route('/')
@@ -189,6 +194,26 @@ def download_audio_route():
      except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+    
+    
+def delete_download_folder(folder_path):
+    # Verifica se a pasta existe
+    if os.path.exists(folder_path):
+        try:
+            # Exclui a pasta e todo seu conteúdo
+            shutil.rmtree(folder_path)
+            print(f"Pasta '{folder_path}' excluída com sucesso!")
+        except Exception as e:
+            print(f"Erro ao excluir a pasta '{folder_path}': {e}")
+    else:
+        print(f"A pasta '{folder_path}' não existe!")    
+
+
+@app.route('/delete-file', methods=['POST'])
+def delete_file():
+   delete_download_folder(DOWNLOAD_FOLDER)
+   return "Pasta de downloads excluída com sucesso!", 200
+
 @app.route('/serve-file/<path:filename>', methods=['GET'])
 def serve_file(filename):
     decoded_filename = urllib.parse.unquote(filename)
