@@ -25,7 +25,6 @@ def download_video(url, progress_hook=None):
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(title)s.%(ext)s'),
         'format': 'best',
         'progress_hooks': [progress_hook] if progress_hook else [],
-    
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
@@ -45,7 +44,6 @@ def download_audio(url, progress_hook=None):
             'preferredquality': '192',
         }],
         'force_generic_extractor': True,
-    
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
@@ -82,7 +80,7 @@ def download_playlist(url, progress_hook=None):
         'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(playlist)s/%(playlist_index)s - %(title)s.%(ext)s'),
         'format': 'best',
         'progress_hooks': [progress_hook] if progress_hook else [],
-    
+
         'ffmpeg_location': 'C:/Program Files/ffmpeg/bin',
         'ffprobe_location': 'C:/Program Files/ffmpeg/bin',
     }
